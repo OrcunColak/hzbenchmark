@@ -40,11 +40,13 @@ import java.util.concurrent.TimeUnit;
 public class BufferedInputStreamJmh {
 
     @Param({"100", "1000", "10000"})
-    private int bufferSize;
+    private int readBufferSize;
 
     private BufferedInputStream bufferedInputStream;
 
     private BufferingInputStream bufferingInputStream;
+
+
 
     public static void main(String[] args) throws Exception {
         org.openjdk.jmh.Main.main(args);
@@ -52,8 +54,9 @@ public class BufferedInputStreamJmh {
 
     @Setup(Level.Invocation)
     public void setup() throws IOException {
-        bufferedInputStream = new BufferedInputStream(new FileInputStream("myfile.txt"), 65536);
-        bufferingInputStream = new BufferingInputStream(new FileInputStream("myfile.txt"), 65536);
+        final int streamInternalBufferSize = 1 << 16;
+        bufferedInputStream = new BufferedInputStream(new FileInputStream("myfile.txt"), streamInternalBufferSize);
+        bufferingInputStream = new BufferingInputStream(new FileInputStream("myfile.txt"), streamInternalBufferSize);
     }
 
     @TearDown(Level.Invocation)
@@ -79,14 +82,14 @@ public class BufferedInputStreamJmh {
     @Benchmark
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void useBufferingInputStream() throws IOException {
-        int numberOfLines = countNewLinesManually(bufferingInputStream, bufferSize);
+        int numberOfLines = countNewLinesManually(bufferingInputStream, readBufferSize);
         //assertThat(numberOfLines).isEqualTo(30_000);
     }
 
     @Benchmark
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void useBufferedInputStream() throws IOException {
-        int numberOfLines = countNewLinesManually(bufferedInputStream, bufferSize);
+        int numberOfLines = countNewLinesManually(bufferedInputStream, readBufferSize);
         //assertThat(numberOfLines).isEqualTo(30_000);
     }
 }
