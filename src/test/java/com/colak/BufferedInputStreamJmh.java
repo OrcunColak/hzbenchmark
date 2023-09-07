@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 // calculate the average time of one call
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-// 5 iterations to warm-up, that may last 10 seconds each
+// 5 iterations to warm-up, that may last 20 milliseconds each
 @Warmup(iterations = 5, time = 20, timeUnit = TimeUnit.MILLISECONDS)
 // 20 iterations to measure, that may last 200 milliseconds each
 @Measurement(iterations = 20, time = 200, timeUnit = TimeUnit.MILLISECONDS)
