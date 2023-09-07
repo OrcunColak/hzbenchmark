@@ -1,5 +1,6 @@
 package com.colak;
 
+import org.apache.commons.io.input.UnsynchronizedBufferedInputStream;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
@@ -20,7 +21,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
-
 
 
 // Only one forked proce
@@ -46,6 +46,7 @@ public class BufferedInputStreamJmh {
 
     private BufferingInputStream bufferingInputStream;
 
+    private UnsynchronizedBufferedInputStream unsynchronizedBufferedInputStream;
 
 
     public static void main(String[] args) throws Exception {
@@ -57,12 +58,17 @@ public class BufferedInputStreamJmh {
         final int streamInternalBufferSize = 1 << 16;
         bufferedInputStream = new BufferedInputStream(new FileInputStream("myfile.txt"), streamInternalBufferSize);
         bufferingInputStream = new BufferingInputStream(new FileInputStream("myfile.txt"), streamInternalBufferSize);
+        unsynchronizedBufferedInputStream = new UnsynchronizedBufferedInputStream.Builder()
+                .setInputStream(new FileInputStream("myfile.txt"))
+                .setBufferSize(streamInternalBufferSize)
+                .get();
     }
 
     @TearDown(Level.Invocation)
     public void teardown() throws IOException {
         bufferedInputStream.close();
         bufferingInputStream.close();
+        unsynchronizedBufferedInputStream.close();
     }
 
     private int countNewLinesManually(InputStream inputStream, int customBytesToBuffer) throws IOException {
@@ -81,15 +87,22 @@ public class BufferedInputStreamJmh {
 
     @Benchmark
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void useBufferingInputStream() throws IOException {
-        int numberOfLines = countNewLinesManually(bufferingInputStream, readBufferSize);
+    public int useBufferingInputStream() throws IOException {
+        return countNewLinesManually(bufferingInputStream, readBufferSize);
         //assertThat(numberOfLines).isEqualTo(30_000);
     }
 
     @Benchmark
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void useBufferedInputStream() throws IOException {
-        int numberOfLines = countNewLinesManually(bufferedInputStream, readBufferSize);
+    public int useBufferedInputStream() throws IOException {
+        return countNewLinesManually(bufferedInputStream, readBufferSize);
+        //assertThat(numberOfLines).isEqualTo(30_000);
+    }
+
+    @Benchmark
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public int useUnsynchronizedBufferedInputStream() throws IOException {
+        return countNewLinesManually(unsynchronizedBufferedInputStream, readBufferSize);
         //assertThat(numberOfLines).isEqualTo(30_000);
     }
 }
