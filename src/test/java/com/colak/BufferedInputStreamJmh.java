@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 
-// Only one forked proce
+// Only one forked process
 @Fork(value = 1)
 // Only one thread
 @Threads(1)
